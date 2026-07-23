@@ -6,7 +6,7 @@ DXコンサルティング会社のコーポレートサイト(Astro製・完全
 
 ```bash
 npm install
-npm run dev      # http://localhost:4321/dx-consulting-site/
+npm run dev      # http://localhost:4321/
 npm run build    # dist/ に静的ファイルを出力
 npm run preview  # ビルド結果の確認
 ```
@@ -15,7 +15,7 @@ npm run preview  # ビルド結果の確認
 
 `main` ブランチに push すると GitHub Actions([.github/workflows/deploy.yml](.github/workflows/deploy.yml))が自動でビルドし、GitHub Pages に公開されます。
 
-公開URL: https://genmori-bit.github.io/dx-consulting-site/
+公開URL: https://michikaku.github.io/
 
 ## 公開前に変更する箇所
 
