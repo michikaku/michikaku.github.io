@@ -103,6 +103,11 @@ const domains = [
         ))
       }
     </div>
+
+    <!-- 3領域を横断する補足:AIは整えた後の実装手段として最小限に -->
+    <p class="domains__ai-note reveal">
+      業務とデータを整えたうえで、記録、検索、要約、下書き、分類、分析など、AIが効果を出しやすい箇所に必要な分だけ組み込みます。
+    </p>
   </div>
 </section>
 
@@ -163,6 +168,17 @@ const domains = [
     margin-top: 56px;
     display: flex;
     flex-direction: column;
+  }
+
+  /* 3領域を横断するAIの補足文(カードではなく地の文) */
+  .domains__ai-note {
+    margin-top: clamp(40px, 5vw, 64px);
+    max-width: 720px;
+    padding-left: 16px;
+    border-left: 2px solid var(--c-primary);
+    font-size: 13.5px;
+    line-height: 2.2;
+    color: var(--c-sub);
   }
 
   .domains__paper {

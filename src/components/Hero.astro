@@ -36,7 +36,11 @@ import HeroMichiMap from "./HeroMichiMap.astro";
           少ない人数でも前に進める仕組みをつくります。
         </p>
 
-        <div class="hero__actions reveal" style="--reveal-delay: 0.75s">
+        <p class="hero__cat reveal" style="--reveal-delay: 0.7s">
+          業務改善・CRM・AI活用を、現場で使われる仕組みへ。
+        </p>
+
+        <div class="hero__actions reveal" style="--reveal-delay: 0.8s">
           <a href="#contact" class="btn btn--primary cta-flow"
             >話してみる<span class="cta-arrow" aria-hidden="true">→</span></a
           >
@@ -156,6 +160,16 @@ import HeroMichiMap from "./HeroMichiMap.astro";
     font-size: 14px;
     line-height: 2.3;
     color: var(--c-sub);
+  }
+
+  /* サービスカテゴリーの補足ラベル(メインより控えめ、AIは強調しない) */
+  .hero__cat {
+    margin-top: 22px;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    color: var(--c-sub);
+    padding-left: 14px;
+    border-left: 2px solid var(--c-hairline);
   }
 
   .hero__actions {
