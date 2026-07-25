@@ -73,6 +73,18 @@ const graph: Record<string, { n: string[]; e: string[] }> = {
 let chipIndex = 0;
 const chipStyle = (item: { dx: number; dy: number; r: number }) =>
   `--dx: ${item.dx}px; --dy: ${item.dy}px; --r: ${item.r}deg; --i: ${chipIndex++}`;
+
+/**
+ * モバイル(720px以下)の Michi Flow。
+ * 同じ lanes データから生成し、情報を二重管理しない。
+ * 画面が縦に長くなりすぎないよう、各グループ先頭4件に絞る。
+ */
+const flowGroups = [
+  { num: "01", ja: "顧客接点", items: lanes[0].items.slice(0, 4) },
+  { num: "02", ja: "社内業務", items: lanes[1].items.slice(0, 4) },
+] as const;
+
+const flowMgmt = { num: "03", ja: "経営判断", items: lanes[2].items.slice(0, 4) };
 ---
 
 <figure
@@ -161,6 +173,51 @@ const chipStyle = (item: { dx: number; dy: number; r: number }) =>
   }
 </figure>
 
+<!--
+  Michi Flow — モバイル(720px以下)専用の縦方向フロー。
+  デスクトップの Michi Map とは排他表示(CSSで切替)。
+-->
+<figure
+  class="michiflow"
+  role="group"
+  aria-label="ミチカクの仕事の流れ。顧客接点から社内業務へ、データの基盤を通じて経営判断、そして次の打ち手へつながる。"
+>
+  <div class="michiflow__track">
+    <span class="michiflow__line" data-flow-line aria-hidden="true"></span>
+
+    {
+      flowGroups.map((group, i) => (
+        <div class="michiflow__group" style={`--g: ${i}`}>
+          <p class="michiflow__head">
+            <span class="michiflow__num">{group.num}</span>
+            <span class="michiflow__ja">{group.ja}</span>
+          </p>
+          <p class="michiflow__items">
+            {group.items.map((item) => item.t).join(" / ")}
+          </p>
+        </div>
+      ))
+    }
+
+    <!-- 仕事を支える共通の層(工程には見せない) -->
+    <div class="michiflow__foundation" style="--g: 2">
+      <p class="michiflow__foundation-en">Data Foundation</p>
+      <p class="michiflow__foundation-ja">顧客・案件・取引データ</p>
+    </div>
+
+    <div class="michiflow__group michiflow__group--mgmt" style="--g: 3">
+      <p class="michiflow__head">
+        <span class="michiflow__num">{flowMgmt.num}</span>
+        <span class="michiflow__ja">{flowMgmt.ja}</span>
+      </p>
+      <p class="michiflow__items">
+        {flowMgmt.items.map((item) => item.t).join(" / ")}
+      </p>
+      <span class="michiflow__goal" data-flow-goal aria-hidden="true"></span>
+    </div>
+  </div>
+</figure>
+
 <script define:vars={{ graph }}>
   // 業務項目単位の関係ハイライト(hover / focus / Escape)
   const map = document.querySelector(".michimap");
@@ -194,6 +251,28 @@ const chipStyle = (item: { dx: number; dy: number; r: number }) =>
     window.addEventListener("keydown", (e) => {
       if (e.key === "Escape") clear();
     });
+  }
+
+  // Michi Flow(モバイル):ビューポートに入ったら一度だけ再生し、以後は静止
+  const flow = document.querySelector(".michiflow");
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (flow && !reduced && "IntersectionObserver" in window) {
+    // JSが動く環境でのみ初期状態へ(JS無効時は完成状態のまま)
+    flow.classList.add("is-armed");
+
+    const io = new IntersectionObserver(
+      (entries, observer) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          entry.target.classList.add("is-playing");
+          observer.unobserve(entry.target);
+        }
+      },
+      { threshold: 0.15 }
+    );
+
+    io.observe(flow);
   }
 </script>
 
@@ -473,6 +552,185 @@ const chipStyle = (item: { dx: number; dy: number; r: number }) =>
   }
 
   /* ==========================================================
+     Michi Flow(モバイル専用)
+     デスクトップでは非表示。720px以下で Michi Map と入れ替わる。
+     ========================================================== */
+  .michiflow {
+    display: none;
+  }
+
+  @media (max-width: 720px) {
+    /* デスクトップ版の業務地図はモバイルでは出さない */
+    .michimap {
+      display: none;
+    }
+
+    .michiflow {
+      display: block;
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    .michiflow__track {
+      position: relative;
+      padding-left: 26px;
+    }
+
+    /*
+     * 一本の焼きオレンジの縦線(上から下へ描画され、静止する)。
+     * 既定は完成状態。JSが再生準備をしたときだけ .is-armed で初期状態に戻す。
+     */
+    .michiflow__line {
+      position: absolute;
+      left: 3px;
+      top: 6px;
+      bottom: 14px;
+      width: 2px;
+      background: var(--c-primary);
+      border-radius: 1px;
+      transform-origin: top;
+    }
+
+    .michiflow.is-armed .michiflow__line {
+      transform: scaleY(0);
+    }
+
+    .michiflow.is-playing .michiflow__line {
+      animation: flow-line 1.7s cubic-bezier(0.33, 0, 0.2, 1) 0.45s forwards;
+    }
+
+    @keyframes flow-line {
+      to {
+        transform: scaleY(1);
+      }
+    }
+
+    /* --- グループ(顧客接点 / 社内業務 / 経営判断)--- */
+    .michiflow__group,
+    .michiflow__foundation {
+      position: relative;
+    }
+
+    .michiflow.is-armed .michiflow__group,
+    .michiflow.is-armed .michiflow__foundation {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+
+    .michiflow.is-playing .michiflow__group,
+    .michiflow.is-playing .michiflow__foundation {
+      animation: flow-in 0.5s ease-out forwards;
+      /* 0.20s / 0.80s / 1.30s / 1.80s */
+      animation-delay: calc(0.2s + var(--g) * 0.53s);
+    }
+
+    @keyframes flow-in {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .michiflow__group + .michiflow__group,
+    .michiflow__foundation,
+    .michiflow__group--mgmt {
+      margin-top: 22px;
+    }
+
+    .michiflow__head {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+    }
+
+    /* 線上の起点(丸ノードではなく、道筋に接する小さな印) */
+    .michiflow__head::before {
+      content: "";
+      position: absolute;
+      left: -26px;
+      top: 7px;
+      width: 8px;
+      height: 2px;
+      background: var(--c-primary);
+    }
+
+    .michiflow__num {
+      font-family: var(--font-en);
+      font-weight: 400;
+      font-size: 10.5px;
+      letter-spacing: 0.2em;
+      color: var(--c-primary);
+    }
+
+    .michiflow__ja {
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      color: var(--c-text);
+    }
+
+    .michiflow__items {
+      margin-top: 8px;
+      font-size: 12px;
+      line-height: 1.9;
+      letter-spacing: 0.06em;
+      color: var(--c-sub);
+    }
+
+    /* --- Data Foundation:箱ではなく、仕事を支える薄い層 --- */
+    .michiflow__foundation {
+      padding: 12px 14px;
+      background: rgba(22, 74, 58, 0.06);
+      border-top: 1px dashed rgba(22, 74, 58, 0.4);
+      border-bottom: 1px dashed rgba(22, 74, 58, 0.4);
+      /* 線の左側まで層を広げ、工程ではなく基盤に見せる */
+      margin-left: -26px;
+      padding-left: 26px;
+    }
+
+    .michiflow__foundation-en {
+      font-family: var(--font-en);
+      font-weight: 400;
+      font-size: 10px;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: var(--c-secondary);
+    }
+
+    .michiflow__foundation-ja {
+      margin-top: 4px;
+      font-size: 11.5px;
+      letter-spacing: 0.08em;
+      color: var(--c-sub);
+    }
+
+    /* --- 終点(次の打ち手の先に灯る小さな深緑の点)--- */
+    .michiflow__goal {
+      position: absolute;
+      left: -26px;
+      bottom: -6px;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--c-secondary);
+    }
+
+    .michiflow.is-armed .michiflow__goal {
+      opacity: 0;
+    }
+
+    .michiflow.is-playing .michiflow__goal {
+      animation: flow-goal 0.4s ease-out 2.1s forwards;
+    }
+
+    @keyframes flow-goal {
+      to {
+        opacity: 1;
+      }
+    }
+  }
+
+  /* ==========================================================
      モバイル:静的な3レーン図
      ========================================================== */
   @media (max-width: 720px) {
@@ -582,6 +840,20 @@ const chipStyle = (item: { dx: number; dy: number; r: number }) =>
     .michimap__layer {
       animation: none;
       opacity: 1;
+    }
+
+    /* Michi Flow:再生せず、最初から完成状態で表示する */
+    .michiflow__line,
+    .michiflow__group,
+    .michiflow__foundation,
+    .michiflow__goal {
+      animation: none !important;
+      opacity: 1 !important;
+      transform: none !important;
+    }
+
+    .michiflow__line {
+      transform: scaleY(1) !important;
     }
   }
 </style>
