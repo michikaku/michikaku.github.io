@@ -597,16 +597,11 @@ const flowMgmt = { num: "03", ja: "経営判断", items: lanes[2].items.slice(0,
 
     .michiflow.is-armed .michiflow__line {
       transform: scaleY(0);
+      transition: transform 1.7s cubic-bezier(0.33, 0, 0.2, 1) 0.45s;
     }
 
-    .michiflow.is-playing .michiflow__line {
-      animation: flow-line 1.7s cubic-bezier(0.33, 0, 0.2, 1) 0.45s forwards;
-    }
-
-    @keyframes flow-line {
-      to {
-        transform: scaleY(1);
-      }
+    .michiflow.is-armed.is-playing .michiflow__line {
+      transform: scaleY(1);
     }
 
     /* --- グループ(顧客接点 / 社内業務 / 経営判断)--- */
@@ -615,24 +610,23 @@ const flowMgmt = { num: "03", ja: "経営判断", items: lanes[2].items.slice(0,
       position: relative;
     }
 
+    /*
+     * transition方式:is-playing で完成状態へ遷移する。
+     * アニメーションが進まない環境でも、クラスさえ付けば最終状態が適用される。
+     */
     .michiflow.is-armed .michiflow__group,
     .michiflow.is-armed .michiflow__foundation {
       opacity: 0;
       transform: translateY(8px);
+      transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+      transition-delay: calc(0.2s + var(--g) * 0.53s);
     }
 
-    .michiflow.is-playing .michiflow__group,
-    .michiflow.is-playing .michiflow__foundation {
-      animation: flow-in 0.5s ease-out forwards;
-      /* 0.20s / 0.80s / 1.30s / 1.80s */
-      animation-delay: calc(0.2s + var(--g) * 0.53s);
-    }
-
-    @keyframes flow-in {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    /* 0.20s / 0.73s / 1.26s / 1.79s の順に現れる */
+    .michiflow.is-armed.is-playing .michiflow__group,
+    .michiflow.is-armed.is-playing .michiflow__foundation {
+      opacity: 1;
+      transform: translateY(0);
     }
 
     .michiflow__group + .michiflow__group,
@@ -721,16 +715,11 @@ const flowMgmt = { num: "03", ja: "経営判断", items: lanes[2].items.slice(0,
 
     .michiflow.is-armed .michiflow__goal {
       opacity: 0;
+      transition: opacity 0.4s ease-out 2.1s;
     }
 
-    .michiflow.is-playing .michiflow__goal {
-      animation: flow-goal 0.4s ease-out 2.1s forwards;
-    }
-
-    @keyframes flow-goal {
-      to {
-        opacity: 1;
-      }
+    .michiflow.is-armed.is-playing .michiflow__goal {
+      opacity: 1;
     }
   }
 
@@ -846,16 +835,18 @@ const flowMgmt = { num: "03", ja: "経営判断", items: lanes[2].items.slice(0,
     }
 
     /* Michi Flow:再生せず、最初から完成状態で表示する */
-    .michiflow__line,
     .michiflow__group,
     .michiflow__foundation,
     .michiflow__goal {
       animation: none !important;
+      transition: none !important;
       opacity: 1 !important;
       transform: none !important;
     }
 
     .michiflow__line {
+      animation: none !important;
+      transition: none !important;
       transform: scaleY(1) !important;
     }
   }
