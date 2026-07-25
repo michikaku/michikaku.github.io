@@ -560,11 +560,7 @@ const flowMgmt = { num: "03", ja: "経営判断", items: lanes[2].items.slice(0,
   }
 
   @media (max-width: 720px) {
-    /* デスクトップ版の業務地図はモバイルでは出さない */
-    .michimap {
-      display: none;
-    }
-
+    /* Michi Map の非表示は後段の既存モバイルブロックで指定している */
     .michiflow {
       display: block;
       width: 100%;
@@ -734,10 +730,9 @@ const flowMgmt = { num: "03", ja: "経営判断", items: lanes[2].items.slice(0,
      モバイル:静的な3レーン図
      ========================================================== */
   @media (max-width: 720px) {
+    /* モバイルは Michi Flow を表示するため、業務地図は出さない */
     .michimap {
-      height: auto;
-      display: flex;
-      flex-direction: column;
+      display: none;
     }
 
     .michimap__lines {
