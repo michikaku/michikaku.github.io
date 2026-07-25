@@ -261,18 +261,26 @@ const flowMgmt = { num: "03", ja: "経営判断", items: lanes[2].items.slice(0,
     // JSが動く環境でのみ初期状態へ(JS無効時は完成状態のまま)
     flow.classList.add("is-armed");
 
+    const play = () => {
+      if (flow.classList.contains("is-playing")) return;
+      flow.classList.add("is-playing");
+      io.disconnect();
+      clearTimeout(fallback);
+    };
+
     const io = new IntersectionObserver(
-      (entries, observer) => {
+      (entries) => {
         for (const entry of entries) {
-          if (!entry.isIntersecting) continue;
-          entry.target.classList.add("is-playing");
-          observer.unobserve(entry.target);
+          if (entry.isIntersecting) play();
         }
       },
       { threshold: 0.15 }
     );
 
     io.observe(flow);
+
+    // 保険:何らかの理由でIOが発火しない環境でも、非表示のまま残さない
+    const fallback = setTimeout(play, 1200);
   }
 </script>
 
